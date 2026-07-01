@@ -187,8 +187,8 @@
    ڕێکخستنی Supabase — لێرە URL و ANON KEY ی پرۆژەکەی
    خۆتی Supabase دابنێ (لە Project Settings → API)
 ====================================================== */
-const SUPABASE_URL = "https://lxjlbsmolxubbwskwkqi.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_n7pdD3zXpckyFmzcDmiDMw_Y_VRhda5";
+const SUPABASE_URL = "https://cwjgaysuriwkdzhtwdcd.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_eEa6RM0qEWC2BNvJMgB6lA__Z7I4QCr";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentLoanFilter = 'given';
