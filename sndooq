@@ -26,7 +26,7 @@
   body{background:var(--bg); color:var(--ink);}
   ::-webkit-scrollbar{width:8px;}
   ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
-
+ 
   .stamp{
     width:52px;height:52px;border-radius:9999px;
     display:flex;align-items:center;justify-content:center;
@@ -54,7 +54,7 @@
 </style>
 </head>
 <body class="min-h-screen">
-
+ 
 <!-- ==================== LOGIN SCREEN ==================== -->
 <div id="loginScreen" class="min-h-screen flex items-center justify-center px-4">
   <div class="card w-full max-w-sm p-8 fade-in">
@@ -66,11 +66,11 @@
       </div>
     </div>
     <p class="text-sm mt-4 mb-5" style="color:var(--ink-soft)">بچۆرە ژوورەوە بۆ بەڕێوەبردنی حسابەکانت</p>
-
+ 
     <div id="setupNotice" class="hidden text-xs mb-4 p-3 rounded-lg" style="background:#FBF3E3; color:var(--gold); border:1px solid var(--gold)">
       پێویستە پێشتر لە Supabase Dashboard بەکارهێنەرێک دروست بکەیت (Authentication → Users → Add user).
     </div>
-
+ 
     <form id="loginForm" class="space-y-3">
       <div>
         <label class="text-xs font-medium" style="color:var(--ink-soft)">ئیمەیل</label>
@@ -85,10 +85,10 @@
     </form>
   </div>
 </div>
-
+ 
 <!-- ==================== APP SHELL ==================== -->
 <div id="appShell" class="hidden min-h-screen md:flex">
-
+ 
   <!-- Sidebar -->
   <aside class="md:w-60 shrink-0 border-b md:border-b-0 md:border-s" style="border-color:var(--border); background:var(--surface);">
     <div class="p-5 flex items-center gap-3 border-b" style="border-color:var(--border)">
@@ -116,25 +116,25 @@
       <button id="logoutBtn" class="w-full text-xs py-2 rounded-lg border" style="border-color:var(--border); color:var(--ink-soft)">دەرچوون</button>
     </div>
   </aside>
-
+ 
   <!-- Main content -->
   <main class="flex-1 p-4 md:p-8 max-w-5xl">
-
+ 
     <!-- DASHBOARD -->
     <section id="tab-dashboard" class="tab-panel fade-in">
       <h2 class="font-head text-2xl font-bold mb-6">داشبۆرد</h2>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div class="card p-5">
           <p class="text-xs" style="color:var(--ink-soft)">کۆی مەسروفاتی ئەم مانگە</p>
-          <p id="statExpenses" class="num font-head text-2xl font-bold mt-2" style="color:var(--ink)">۰</p>
+          <div id="statExpenses" class="mt-2 space-y-0.5"></div>
         </div>
         <div class="card p-5" style="border-color:var(--gold)">
           <p class="text-xs" style="color:var(--ink-soft)">قەرزی داوم (ماوە بۆ وەرگرتنەوە)</p>
-          <p id="statGiven" class="num font-head text-2xl font-bold mt-2" style="color:var(--gold)">۰</p>
+          <div id="statGiven" class="mt-2 space-y-0.5"></div>
         </div>
         <div class="card p-5" style="border-color:var(--rust)">
           <p class="text-xs" style="color:var(--ink-soft)">قەرزی وەرگیراوم (ماوە بۆ دانەوە)</p>
-          <p id="statReceived" class="num font-head text-2xl font-bold mt-2" style="color:var(--rust)">۰</p>
+          <div id="statReceived" class="mt-2 space-y-0.5"></div>
         </div>
       </div>
       <div class="card p-5">
@@ -142,7 +142,7 @@
         <div id="recentActivity" class="space-y-2 text-sm"></div>
       </div>
     </section>
-
+ 
     <!-- EXPENSES -->
     <section id="tab-expenses" class="tab-panel hidden">
       <div class="flex items-center justify-between mb-6">
@@ -151,7 +151,7 @@
       </div>
       <div class="card divide-y" style="border-color:var(--border)" id="expensesList"></div>
     </section>
-
+ 
     <!-- LOANS -->
     <section id="tab-loans" class="tab-panel hidden">
       <div class="flex items-center justify-between mb-4">
@@ -164,7 +164,7 @@
       </div>
       <div class="card divide-y" style="border-color:var(--border)" id="loansList"></div>
     </section>
-
+ 
     <!-- PEOPLE -->
     <section id="tab-people" class="tab-panel hidden">
       <div class="flex items-center justify-between mb-6">
@@ -173,15 +173,15 @@
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="peopleList"></div>
     </section>
-
+ 
   </main>
 </div>
-
+ 
 <!-- ==================== MODAL ==================== -->
 <div id="modalBackdrop" class="hidden fixed inset-0 bg-black/40 z-40 flex items-center justify-center px-4">
   <div id="modalBox" class="card w-full max-w-md p-6 z-50 fade-in max-h-[85vh] overflow-y-auto"></div>
 </div>
-
+ 
 <script>
 /* ======================================================
    ڕێکخستنی Supabase — لێرە URL و ANON KEY ی پرۆژەکەی
@@ -190,14 +190,16 @@
 const SUPABASE_URL = "https://lxjlbsmolxubbwskwkqi.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_n7pdD3zXpckyFmzcDmiDMw_Y_VRhda5";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+ 
 let currentLoanFilter = 'given';
 let peopleCache = [];
-
+ 
 /* ---------- Helpers ---------- */
 const fmt = n => new Intl.NumberFormat('en-US').format(Number(n || 0));
 const todayStr = () => new Date().toISOString().slice(0,10);
-
+const curSymbol = c => c === 'USD' ? '$' : 'د.ع';
+const fmtCur = (n, c) => c === 'USD' ? `$${fmt(n)}` : `${fmt(n)} د.ع`;
+ 
 function showModal(html){
   document.getElementById('modalBox').innerHTML = html;
   document.getElementById('modalBackdrop').classList.remove('hidden');
@@ -208,7 +210,7 @@ function closeModal(){
 document.getElementById('modalBackdrop').addEventListener('click', e=>{
   if(e.target.id === 'modalBackdrop') closeModal();
 });
-
+ 
 /* ---------- Auth ---------- */
 document.getElementById('loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
@@ -224,12 +226,12 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   }
   await enterApp();
 });
-
+ 
 document.getElementById('logoutBtn').addEventListener('click', async ()=>{
   await sb.auth.signOut();
   location.reload();
 });
-
+ 
 async function checkSession(){
   const { data } = await sb.auth.getSession();
   if(data.session){
@@ -239,7 +241,7 @@ async function checkSession(){
     document.getElementById('appShell').classList.add('hidden');
   }
 }
-
+ 
 async function enterApp(){
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('appShell').classList.remove('hidden');
@@ -250,7 +252,7 @@ async function enterApp(){
   await renderLoans();
   await renderPeople();
 }
-
+ 
 /* ---------- Navigation ---------- */
 document.querySelectorAll('.nav-item').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -260,13 +262,13 @@ document.querySelectorAll('.nav-item').forEach(btn=>{
     document.getElementById('tab-'+btn.dataset.tab).classList.remove('hidden');
   });
 });
-
+ 
 /* ---------- People ---------- */
 async function loadPeople(){
   const { data } = await sb.from('people').select('*').order('name');
   peopleCache = data || [];
 }
-
+ 
 async function renderPeople(){
   const wrap = document.getElementById('peopleList');
   if(!peopleCache.length){
@@ -276,14 +278,18 @@ async function renderPeople(){
   const { data: loans } = await sb.from('loans').select('*, loan_payments(amount)');
   wrap.innerHTML = peopleCache.map(p=>{
     const personLoans = (loans||[]).filter(l=>l.person_id===p.id);
-    let net = 0;
+    const netByCur = { IQD: 0, USD: 0 };
     personLoans.forEach(l=>{
       const paid = (l.loan_payments||[]).reduce((s,pay)=>s+Number(pay.amount),0);
       const remaining = Number(l.amount) - paid;
-      net += l.type === 'given' ? remaining : -remaining;
+      const cur = l.currency || 'IQD';
+      netByCur[cur] += l.type === 'given' ? remaining : -remaining;
     });
-    const color = net > 0 ? 'var(--gold)' : net < 0 ? 'var(--rust)' : 'var(--sage)';
-    const label = net > 0 ? 'قەرزاری تۆیە' : net < 0 ? 'قەرزی لێت هەیە' : 'یەکسانە';
+    const lines = Object.entries(netByCur).filter(([,v])=>Math.abs(v) > 0.001).map(([cur, net])=>{
+      const color = net > 0 ? 'var(--gold)' : 'var(--rust)';
+      const label = net > 0 ? 'قەرزاری تۆیە' : 'قەرزی لێت هەیە';
+      return `<p class="num text-sm font-bold" style="color:${color}">${fmtCur(Math.abs(net), cur)} <span class="text-[11px] font-normal" style="color:var(--ink-soft)">${label}</span></p>`;
+    }).join('');
     return `
     <div class="card p-4 flex items-center justify-between gap-3">
       <div>
@@ -291,13 +297,12 @@ async function renderPeople(){
         <p class="text-xs mt-0.5" style="color:var(--ink-soft)">${p.phone || 'ژمارە تۆمار نەکراوە'}</p>
       </div>
       <div class="text-end">
-        <p class="num text-sm font-bold" style="color:${color}">${fmt(Math.abs(net))}</p>
-        <p class="text-[11px]" style="color:var(--ink-soft)">${label}</p>
+        ${lines || `<p class="text-[11px]" style="color:var(--sage)">یەکسانە</p>`}
       </div>
     </div>`;
   }).join('');
 }
-
+ 
 document.getElementById('addPersonBtn').addEventListener('click', ()=>{
   showModal(`
     <h3 class="font-head text-lg font-bold mb-4">کەسی نوێ</h3>
@@ -325,7 +330,7 @@ document.getElementById('addPersonBtn').addEventListener('click', ()=>{
     await renderLoans();
   });
 });
-
+ 
 /* ---------- Expenses ---------- */
 async function renderExpenses(){
   const { data } = await sb.from('expenses').select('*').order('expense_date', { ascending:false }).limit(100);
@@ -341,26 +346,35 @@ async function renderExpenses(){
         <p class="text-[11px] mt-0.5" style="color:var(--ink-soft)">${x.expense_date}</p>
       </div>
       <div class="flex items-center gap-3">
-        <p class="num text-sm font-bold" style="color:var(--rust)">${fmt(x.amount)}</p>
+        <p class="num text-sm font-bold" style="color:var(--rust)">${fmtCur(x.amount, x.currency || 'IQD')}</p>
         <button onclick="deleteExpense('${x.id}')" class="text-xs" style="color:var(--ink-soft)">✕</button>
       </div>
     </div>
   `).join('');
 }
-
+ 
 async function deleteExpense(id){
   await sb.from('expenses').delete().eq('id', id);
   await renderExpenses();
   await renderDashboard();
 }
-
+ 
 document.getElementById('addExpenseBtn').addEventListener('click', ()=>{
   showModal(`
     <h3 class="font-head text-lg font-bold mb-4">خەرجی نوێ</h3>
     <form id="expenseForm" class="space-y-3">
-      <div>
-        <label class="text-xs font-medium" style="color:var(--ink-soft)">بڕی پارە</label>
-        <input required type="number" step="0.01" id="eAmount" class="w-full mt-1 px-3 py-2 text-sm">
+      <div class="grid grid-cols-3 gap-2">
+        <div class="col-span-2">
+          <label class="text-xs font-medium" style="color:var(--ink-soft)">بڕی پارە</label>
+          <input required type="number" step="0.01" id="eAmount" class="w-full mt-1 px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-medium" style="color:var(--ink-soft)">دراو</label>
+          <select id="eCurrency" class="w-full mt-1 px-3 py-2 text-sm">
+            <option value="IQD">د.ع</option>
+            <option value="USD">$</option>
+          </select>
+        </div>
       </div>
       <div>
         <label class="text-xs font-medium" style="color:var(--ink-soft)">پۆل</label>
@@ -384,6 +398,7 @@ document.getElementById('addExpenseBtn').addEventListener('click', ()=>{
     e.preventDefault();
     await sb.from('expenses').insert({
       amount: document.getElementById('eAmount').value,
+      currency: document.getElementById('eCurrency').value,
       category: document.getElementById('eCategory').value,
       description: document.getElementById('eDesc').value,
       expense_date: document.getElementById('eDate').value
@@ -393,7 +408,7 @@ document.getElementById('addExpenseBtn').addEventListener('click', ()=>{
     await renderDashboard();
   });
 });
-
+ 
 /* ---------- Loans ---------- */
 document.querySelectorAll('.loan-filter').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -408,7 +423,7 @@ document.querySelectorAll('.loan-filter').forEach(btn=>{
     renderLoans();
   });
 });
-
+ 
 async function renderLoans(){
   const { data } = await sb.from('loans').select('*, people(name), loan_payments(id, amount, payment_date)').eq('type', currentLoanFilter).order('loan_date', { ascending:false });
   const wrap = document.getElementById('loansList');
@@ -420,37 +435,39 @@ async function renderLoans(){
     const paid = (l.loan_payments||[]).reduce((s,p)=>s+Number(p.amount),0);
     const remaining = Number(l.amount) - paid;
     const settled = remaining <= 0;
+    const cur = l.currency || 'IQD';
     return `
     <div class="p-4">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm font-semibold">${l.people?.name || '—'}</p>
           <p class="text-[11px] mt-0.5" style="color:var(--ink-soft)">${l.loan_date}${l.due_date ? ' → کاتی گەڕانەوە: '+l.due_date : ''}</p>
+          ${l.notes ? `<p class="text-[11px] mt-1" style="color:var(--ink-soft)">📝 ${l.notes}</p>` : ''}
         </div>
-        <div class="text-end">
-          <p class="num text-sm font-bold" style="color:${settled ? 'var(--sage)' : (currentLoanFilter==='given' ? 'var(--gold)':'var(--rust)')}">${fmt(remaining)}</p>
-          <p class="text-[11px]" style="color:var(--ink-soft)">${settled ? 'تەواو دراوەتەوە' : 'لە کۆی '+fmt(l.amount)}</p>
+        <div class="text-end shrink-0 ms-3">
+          <p class="num text-sm font-bold" style="color:${settled ? 'var(--sage)' : (currentLoanFilter==='given' ? 'var(--gold)':'var(--rust)')}">${fmtCur(remaining, cur)}</p>
+          <p class="text-[11px]" style="color:var(--ink-soft)">${settled ? 'تەواو دراوەتەوە' : 'لە کۆی '+fmtCur(l.amount, cur)}</p>
         </div>
       </div>
       ${!settled ? `<div class="flex gap-2 mt-3">
-        <button onclick="addPayment('${l.id}', ${remaining})" class="text-xs px-3 py-1.5 rounded-full font-semibold" style="background:#EFE8D8; color:var(--teal)">+ تۆمارکردنی دانەوە</button>
+        <button onclick="addPayment('${l.id}', ${remaining}, '${cur}')" class="text-xs px-3 py-1.5 rounded-full font-semibold" style="background:#EFE8D8; color:var(--teal)">+ تۆمارکردنی دانەوە</button>
         <button onclick="deleteLoan('${l.id}')" class="text-xs px-3 py-1.5 rounded-full" style="color:var(--ink-soft)">سڕینەوە</button>
       </div>` : `<div class="mt-3"><button onclick="deleteLoan('${l.id}')" class="text-xs px-3 py-1.5 rounded-full" style="color:var(--ink-soft)">سڕینەوە</button></div>`}
     </div>`;
   }).join('');
 }
-
+ 
 async function deleteLoan(id){
   await sb.from('loans').delete().eq('id', id);
   await renderLoans();
   await renderPeople();
   await renderDashboard();
 }
-
-function addPayment(loanId, remaining){
+ 
+function addPayment(loanId, remaining, currency){
   showModal(`
     <h3 class="font-head text-lg font-bold mb-4">تۆمارکردنی دانەوە</h3>
-    <p class="text-xs mb-3" style="color:var(--ink-soft)">بڕی ماوە: <span class="num font-semibold" style="color:var(--ink)">${fmt(remaining)}</span></p>
+    <p class="text-xs mb-3" style="color:var(--ink-soft)">بڕی ماوە: <span class="num font-semibold" style="color:var(--ink)">${fmtCur(remaining, currency)}</span></p>
     <form id="paymentForm" class="space-y-3">
       <div>
         <label class="text-xs font-medium" style="color:var(--ink-soft)">بڕی دراوەتەوە</label>
@@ -479,7 +496,7 @@ function addPayment(loanId, remaining){
     await renderDashboard();
   });
 }
-
+ 
 document.getElementById('addLoanBtn').addEventListener('click', ()=>{
   if(!peopleCache.length){
     showModal(`<p class="text-sm text-center py-6">سەرەتا پێویستە کەسێک زیاد بکەیت لە خشتەی «کەسان».</p>`);
@@ -501,9 +518,18 @@ document.getElementById('addLoanBtn').addEventListener('click', ()=>{
           ${peopleCache.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}
         </select>
       </div>
-      <div>
-        <label class="text-xs font-medium" style="color:var(--ink-soft)">بڕی پارە</label>
-        <input required type="number" step="0.01" id="lAmount" class="w-full mt-1 px-3 py-2 text-sm">
+      <div class="grid grid-cols-3 gap-2">
+        <div class="col-span-2">
+          <label class="text-xs font-medium" style="color:var(--ink-soft)">بڕی پارە</label>
+          <input required type="number" step="0.01" id="lAmount" class="w-full mt-1 px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-medium" style="color:var(--ink-soft)">دراو</label>
+          <select id="lCurrency" class="w-full mt-1 px-3 py-2 text-sm">
+            <option value="IQD">د.ع</option>
+            <option value="USD">$</option>
+          </select>
+        </div>
       </div>
       <div>
         <label class="text-xs font-medium" style="color:var(--ink-soft)">بەرواری قەرز</label>
@@ -512,6 +538,10 @@ document.getElementById('addLoanBtn').addEventListener('click', ()=>{
       <div>
         <label class="text-xs font-medium" style="color:var(--ink-soft)">کاتی گەڕانەوە (ئارەزوومەندانە)</label>
         <input type="date" id="lDue" class="w-full mt-1 px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="text-xs font-medium" style="color:var(--ink-soft)">هۆکاری قەرز (تێبینی)</label>
+        <textarea id="lReason" rows="2" placeholder="بۆ نموونە: بۆ کڕینی ماشین، یارمەتی خێزانی، هتد..." class="w-full mt-1 px-3 py-2 text-sm"></textarea>
       </div>
       <div class="flex gap-2 pt-2">
         <button type="submit" class="btn-primary flex-1 py-2 rounded-lg text-sm font-semibold">پاشەکەوتکردن</button>
@@ -524,9 +554,11 @@ document.getElementById('addLoanBtn').addEventListener('click', ()=>{
     await sb.from('loans').insert({
       type: document.getElementById('lType').value,
       person_id: document.getElementById('lPerson').value,
+      currency: document.getElementById('lCurrency').value,
       amount: document.getElementById('lAmount').value,
       loan_date: document.getElementById('lDate').value,
-      due_date: document.getElementById('lDue').value || null
+      due_date: document.getElementById('lDue').value || null,
+      notes: document.getElementById('lReason').value || null
     });
     closeModal();
     await renderLoans();
@@ -534,42 +566,50 @@ document.getElementById('addLoanBtn').addEventListener('click', ()=>{
     await renderDashboard();
   });
 });
-
+ 
 /* ---------- Dashboard ---------- */
 async function renderDashboard(){
   const monthStart = todayStr().slice(0,7)+'-01';
-  const { data: exp } = await sb.from('expenses').select('amount').gte('expense_date', monthStart);
-  const totalExp = (exp||[]).reduce((s,x)=>s+Number(x.amount),0);
-  document.getElementById('statExpenses').textContent = fmt(totalExp);
-
+  const { data: exp } = await sb.from('expenses').select('amount, currency').gte('expense_date', monthStart);
+  const expByCur = { IQD: 0, USD: 0 };
+  (exp||[]).forEach(x=>{ expByCur[x.currency || 'IQD'] += Number(x.amount); });
+ 
   const { data: loans } = await sb.from('loans').select('*, loan_payments(amount)');
-  let given = 0, received = 0;
+  const given = { IQD: 0, USD: 0 }, received = { IQD: 0, USD: 0 };
   (loans||[]).forEach(l=>{
     const paid = (l.loan_payments||[]).reduce((s,p)=>s+Number(p.amount),0);
     const remaining = Number(l.amount) - paid;
     if(remaining <= 0) return;
-    if(l.type === 'given') given += remaining; else received += remaining;
+    const cur = l.currency || 'IQD';
+    if(l.type === 'given') given[cur] += remaining; else received[cur] += remaining;
   });
-  document.getElementById('statGiven').textContent = fmt(given);
-  document.getElementById('statReceived').textContent = fmt(received);
-
+  const renderStat = (obj, color) => {
+    const lines = Object.entries(obj).filter(([,v])=>v > 0.001).map(([cur, v])=>
+      `<p class="num font-head text-xl font-bold" style="color:${color}">${fmtCur(v, cur)}</p>`
+    ).join('');
+    return lines || `<p class="num font-head text-xl font-bold" style="color:${color}">۰</p>`;
+  };
+  document.getElementById('statExpenses').innerHTML = renderStat(expByCur, 'var(--ink)');
+  document.getElementById('statGiven').innerHTML = renderStat(given, 'var(--gold)');
+  document.getElementById('statReceived').innerHTML = renderStat(received, 'var(--rust)');
+ 
   // Recent activity
   const { data: recentExp } = await sb.from('expenses').select('*').order('created_at', { ascending:false }).limit(3);
   const { data: recentLoans } = await sb.from('loans').select('*, people(name)').order('created_at', { ascending:false }).limit(3);
   const items = [
-    ...(recentExp||[]).map(x=>({ label: `خەرجی: ${x.category}`, amount: -x.amount, date: x.expense_date })),
-    ...(recentLoans||[]).map(l=>({ label: `${l.type==='given'?'قەرزی دراو بۆ':'قەرزی وەرگیراو لە'} ${l.people?.name||''}`, amount: l.type==='given'?l.amount:-l.amount, date: l.loan_date }))
+    ...(recentExp||[]).map(x=>({ label: `خەرجی: ${x.category}`, amount: -x.amount, cur: x.currency || 'IQD', date: x.expense_date })),
+    ...(recentLoans||[]).map(l=>({ label: `${l.type==='given'?'قەرزی دراو بۆ':'قەرزی وەرگیراو لە'} ${l.people?.name||''}`, amount: l.type==='given'?l.amount:-l.amount, cur: l.currency || 'IQD', date: l.loan_date }))
   ].sort((a,b)=> new Date(b.date) - new Date(a.date)).slice(0,5);
-
+ 
   const wrap = document.getElementById('recentActivity');
   wrap.innerHTML = items.length ? items.map(i=>`
     <div class="flex items-center justify-between py-1.5">
       <span>${i.label}</span>
-      <span class="num font-semibold" style="color:${i.amount<0?'var(--rust)':'var(--gold)'}">${i.amount<0?'-':'+'}${fmt(Math.abs(i.amount))}</span>
+      <span class="num font-semibold" style="color:${i.amount<0?'var(--rust)':'var(--gold)'}">${i.amount<0?'-':'+'}${fmtCur(Math.abs(i.amount), i.cur)}</span>
     </div>
   `).join('') : `<p style="color:var(--ink-soft)">هیچ چالاکییەک نییە.</p>`;
 }
-
+ 
 /* ---------- Init ---------- */
 checkSession();
 </script>
